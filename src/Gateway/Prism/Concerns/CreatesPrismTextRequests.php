@@ -9,6 +9,7 @@ use Laravel\Ai\ObjectSchema;
 use Laravel\Ai\Providers\AnthropicProvider;
 use Laravel\Ai\Providers\OpenAiProvider;
 use Laravel\Ai\Providers\Provider;
+use Prism\Prism\Enums\Provider as PrismProvider;
 use Prism\Prism\Facades\Prism;
 
 trait CreatesPrismTextRequests
@@ -96,6 +97,17 @@ trait CreatesPrismTextRequests
      */
     protected function configure($prism, Provider $provider, string $model): mixed
     {
+        if (static::gatewayEnabled()) {
+            return $prism->using(
+                PrismProvider::OpenAI,
+                $provider->name().'/'.$model,
+                array_filter([
+                    'url' => config('ai.gateway.url'),
+                    'api_key' => config('ai.gateway.key'),
+                ]),
+            );
+        }
+
         return $prism->using(
             static::toPrismProvider($provider),
             $model,

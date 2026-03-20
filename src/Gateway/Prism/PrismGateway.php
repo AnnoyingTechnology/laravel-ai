@@ -183,10 +183,7 @@ class PrismGateway implements Gateway
     ): ImageResponse {
         try {
             $response = Prism::image()
-                ->using(static::toPrismProvider($provider), $model, array_filter([
-                    ...$provider->additionalConfiguration(),
-                    'api_key' => $provider->providerCredentials()['key'],
-                ]))
+                ->using(...static::resolveProviderConfig($provider, $model))
                 ->withPrompt($prompt, $this->toPrismImageAttachments($attachments))
                 ->withProviderOptions($provider->defaultImageOptions($size, $quality))
                 ->withClientOptions([
@@ -252,10 +249,7 @@ class PrismGateway implements Gateway
 
         try {
             $response = Prism::audio()
-                ->using(static::toPrismProvider($provider), $model, array_filter([
-                    ...$provider->additionalConfiguration(),
-                    'api_key' => $provider->providerCredentials()['key'],
-                ]))
+                ->using(...static::resolveProviderConfig($provider, $model))
                 ->withClientOptions([
                     'timeout' => $timeout,
                 ])
@@ -294,10 +288,7 @@ class PrismGateway implements Gateway
             }
 
             $request = Prism::audio()
-                ->using(static::toPrismProvider($provider), $model, array_filter([
-                    ...$provider->additionalConfiguration(),
-                    'api_key' => $provider->providerCredentials()['key'],
-                ]))
+                ->using(...static::resolveProviderConfig($provider, $model))
                 ->withClientOptions([
                     'timeout' => $timeout,
                 ])
@@ -374,6 +365,42 @@ class PrismGateway implements Gateway
             $response->usage->tokens,
             new Meta($provider->name(), $model),
         );
+    }
+
+    /**
+     * Determine if the AI Gateway is enabled.
+     */
+    protected static function gatewayEnabled(): bool
+    {
+        return (bool) config('ai.gateway.enabled', false);
+    }
+
+    /**
+     * Resolve the Prism provider, model, and configuration for the given provider.
+     *
+     * @return array{0: PrismProvider, 1: string, 2: array<string, mixed>}
+     */
+    protected static function resolveProviderConfig(Provider $provider, string $model): array
+    {
+        if (static::gatewayEnabled()) {
+            return [
+                PrismProvider::OpenAI,
+                $provider->name().'/'.$model,
+                array_filter([
+                    'url' => config('ai.gateway.url'),
+                    'api_key' => config('ai.gateway.key'),
+                ]),
+            ];
+        }
+
+        return [
+            static::toPrismProvider($provider),
+            $model,
+            array_filter([
+                ...$provider->additionalConfiguration(),
+                'api_key' => $provider->providerCredentials()['key'],
+            ]),
+        ];
     }
 
     /**
