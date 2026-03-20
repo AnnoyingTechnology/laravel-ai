@@ -4,6 +4,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | AI Gateway
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, all AI requests will be routed through the Laravel AI
+    | Gateway instead of directly to providers. This lets you use a single
+    | API key to access all providers without managing individual keys.
+    |
+    */
+
+    'gateway' => [
+        'enabled' => env('AI_GATEWAY_ENABLED', false),
+        'url' => env('AI_GATEWAY_URL', 'https://ai.laravel.com/api/v1'),
+        'key' => env('AI_GATEWAY_KEY'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Default AI Provider Names
     |--------------------------------------------------------------------------
     |
@@ -19,23 +36,6 @@ return [
     'default_for_transcription' => 'openai',
     'default_for_embeddings' => 'openai',
     'default_for_reranking' => 'cohere',
-
-    /*
-    |--------------------------------------------------------------------------
-    | AI Gateway
-    |--------------------------------------------------------------------------
-    |
-    | When enabled, all AI requests will be routed through the Laravel AI
-    | Gateway instead of directly to providers. This lets you use a single
-    | API key to access all providers without managing individual keys.
-    |
-    */
-
-    'gateway' => [
-        'enabled' => env('AI_GATEWAY_ENABLED', false),
-        'url' => env('AI_GATEWAY_URL', 'https://ai.laravel.com/api/v1'),
-        'key' => env('AI_GATEWAY_KEY'),
-    ],
 
     /*
     |--------------------------------------------------------------------------
